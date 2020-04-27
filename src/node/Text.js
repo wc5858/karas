@@ -249,9 +249,6 @@ class Text extends Node {
   get animateStyle() {
     return this.style;
   }
-  get renderMode() {
-    return this.__renderMode;
-  }
 }
 
 export default Text;

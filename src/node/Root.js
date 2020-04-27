@@ -206,7 +206,7 @@ class Root extends Dom {
     this.node.__root = this;
   }
 
-  refresh(cb) {
+  refresh() {
     let { isDestroyed, renderMode, style } = this;
     if(isDestroyed) {
       return;
@@ -256,13 +256,11 @@ class Root extends Dom {
       if(renderMode === mode.CANVAS) {
         this.__clear();
       }
-      this.emit(Event.BEFORE_REFRESH, lv);
       this.render(renderMode);
       if(renderMode === mode.SVG) {
         let nvd = this.virtualDom;
         let nd = this.__defs;
         nvd.defs = nd.value;
-        nvd = util.clone(nvd);
         if(this.node.__root) {
           diff(this.node, this.node.__vd, nvd);
         }
@@ -272,8 +270,9 @@ class Root extends Dom {
         this.node.__vd = nvd;
         this.node.__defs = nd;
       }
-      if(isFunction(cb)) {
-        cb();
+      // 只有布局改变才可能有component变更
+      if(lv === level.REFLOW) {
+        this.__didMount();
       }
       this.emit(Event.REFRESH);
     });

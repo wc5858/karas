@@ -92,7 +92,6 @@ class Dom extends Xom {
     // 排除掉空的文本
     else if(!util.isNil(children)) {
       let text = new Text(children);
-      text.__renderMode = renderMode;
       list.push(text);
     }
   }
@@ -1087,6 +1086,23 @@ class Dom extends Xom {
         let sr = item.shadowRoot;
         if(sr instanceof Dom) {
           sr.__layoutAbs(sr, data);
+        }
+      }
+    });
+  }
+
+  __didMount() {
+    let { children } = this;
+    children.forEach(child => {
+      if(child instanceof Dom) {
+        child.__didMount();
+      }
+      else if(child instanceof Component) {
+        child.__didMount();
+        let componentDidMount = child.componentDidMount;
+        if(!child.__hasDidMount && util.isFunction(componentDidMount)) {
+          child.__hasDidMount = true;
+          componentDidMount.call(child);
         }
       }
     });

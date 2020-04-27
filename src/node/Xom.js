@@ -190,18 +190,9 @@ class Xom extends Node {
   }
 
   __measure() {
-    let { children } = this;
-    if(children) {
-      children.forEach(child => {
-        if(child instanceof Xom) {
-          child.__measure();
-        }
-        else if(child instanceof Component) {
-          child.shadowRoot.__measure();
-        }
-        else {
-          child.__measure();
-        }
+    if(!this.isGeom) {
+      this.children.forEach(child => {
+        child.__measure();
       });
     }
   }
@@ -406,7 +397,6 @@ class Xom extends Node {
   }
 
   render(renderMode) {
-    this.__renderMode = renderMode;
     if(renderMode === mode.SVG) {
       this.__virtualDom = {
         bb: [],
@@ -1287,9 +1277,6 @@ class Xom extends Node {
   }
   get listener() {
     return this.__listener;
-  }
-  get renderMode() {
-    return this.__renderMode;
   }
   get matrix() {
     return this.__matrix;

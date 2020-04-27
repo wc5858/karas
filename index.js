@@ -368,6 +368,15 @@
         }.hasOwnProperty(this.tagName)) {
           return this;
         }
+      }
+    }, {
+      key: "renderMode",
+      get: function get() {
+        var root = this.root;
+
+        if (root) {
+          return root.renderMode;
+        }
       } // component根节点
 
     }, {
@@ -2900,11 +2909,6 @@
       get: function get() {
         return this.style;
       }
-    }, {
-      key: "renderMode",
-      get: function get() {
-        return this.__renderMode;
-      }
     }]);
 
     return Text;
@@ -4181,8 +4185,6 @@
 
   _defineProperty(Event, "REFRESH", 'refresh');
 
-  _defineProperty(Event, "BEFORE_REFRESH", 'before-refresh');
-
   _defineProperty(Event, "PAUSE", 'pause');
 
   _defineProperty(Event, "PLAY", 'play');
@@ -4471,7 +4473,6 @@
           sr = new Text(s);
           sr.__ctx = ctx;
           sr.__defs = defs;
-          sr.__renderMode = renderMode;
           sr.__style = this.props.style || {};
           this.__shadowRoot = sr;
           return;
@@ -4544,7 +4545,7 @@
           return;
         }
 
-        Object.keys(repaint$1.GEOM).concat(['x', 'y', 'ox', 'oy', 'sx', 'sy', 'width', 'height', 'outerWidth', 'outerHeight', 'style', 'animating', 'animationList', 'animateStyle', 'currentStyle', 'computedStyle', 'animateProps', 'currentProps', 'ctx', 'defs', 'baseLine', 'virtualDom', 'mask', 'maskId']).forEach(function (fn) {
+        Object.keys(repaint$1.GEOM).concat(['x', 'y', 'ox', 'oy', 'sx', 'sy', 'width', 'height', 'outerWidth', 'outerHeight', 'style', 'animating', 'animationList', 'animateStyle', 'currentStyle', 'computedStyle', 'animateProps', 'currentProps', 'ctx', 'defs', 'baseLine', 'virtualDom', 'mask', 'maskId', 'renderMode']).forEach(function (fn) {
           Object.defineProperty(_this3, fn, {
             get: function get() {
               return this.shadowRoot[fn];
@@ -4684,7 +4685,7 @@
     return Component;
   }(Event);
 
-  ['__layout', '__layoutAbs', '__tryLayInline', '__offsetX', '__offsetY', '__calAutoBasis', '__calMp', '__calAbs', '__renderAsMask', '__renderByMask', '__setCtx'].forEach(function (fn) {
+  ['__layout', '__layoutAbs', '__tryLayInline', '__offsetX', '__offsetY', '__calAutoBasis', '__calMp', '__calAbs', '__renderAsMask', '__renderByMask', '__setCtx', '__didMount', '__willMount', '__measure'].forEach(function (fn) {
     Component.prototype[fn] = function () {
       var sr = this.shadowRoot;
 
@@ -7241,17 +7242,9 @@
     }, {
       key: "__measure",
       value: function __measure() {
-        var children = this.children;
-
-        if (children) {
-          children.forEach(function (child) {
-            if (child instanceof Xom) {
-              child.__measure();
-            } else if (child instanceof Component) {
-              child.shadowRoot.__measure();
-            } else {
-              child.__measure();
-            }
+        if (!this.isGeom) {
+          this.children.forEach(function (child) {
+            child.__measure();
           });
         }
       } // 获取margin/padding的实际值
@@ -7487,8 +7480,6 @@
       key: "render",
       value: function render(renderMode) {
         var _this5 = this;
-
-        this.__renderMode = renderMode;
 
         if (renderMode === mode.SVG) {
           this.__virtualDom = {
@@ -8457,11 +8448,6 @@
         return this.__listener;
       }
     }, {
-      key: "renderMode",
-      get: function get() {
-        return this.__renderMode;
-      }
-    }, {
       key: "matrix",
       get: function get() {
         return this.__matrix;
@@ -9184,7 +9170,6 @@
           } // 排除掉空的文本
           else if (!util.isNil(children)) {
               var text = new Text(children);
-              text.__renderMode = renderMode;
               list.push(text);
             }
       } // 合并设置style，包括继承和默认值，修改一些自动值和固定值，测量所有文字的宽度
@@ -10299,6 +10284,25 @@
 
             if (sr instanceof Dom) {
               sr.__layoutAbs(sr, data);
+            }
+          }
+        });
+      }
+    }, {
+      key: "__didMount",
+      value: function __didMount() {
+        var children = this.children;
+        children.forEach(function (child) {
+          if (child instanceof Dom) {
+            child.__didMount();
+          } else if (child instanceof Component) {
+            child.__didMount();
+
+            var componentDidMount = child.componentDidMount;
+
+            if (!child.__hasDidMount && util.isFunction(componentDidMount)) {
+              child.__hasDidMount = true;
+              componentDidMount.call(child);
             }
           }
         });
@@ -11671,7 +11675,7 @@
       }
     }, {
       key: "refresh",
-      value: function refresh(cb) {
+      value: function refresh() {
         var _this2 = this;
 
         var isDestroyed = this.isDestroyed,
@@ -11732,15 +11736,12 @@
             _this2.__clear();
           }
 
-          _this2.emit(Event.BEFORE_REFRESH, lv);
-
           _this2.render(renderMode);
 
           if (renderMode === mode.SVG) {
             var nvd = _this2.virtualDom;
             var nd = _this2.__defs;
             nvd.defs = nd.value;
-            nvd = util.clone(nvd);
 
             if (_this2.node.__root) {
               diff$1(_this2.node, _this2.node.__vd, nvd);
@@ -11750,10 +11751,11 @@
 
             _this2.node.__vd = nvd;
             _this2.node.__defs = nd;
-          }
+          } // 只有布局改变才可能有component变更
 
-          if (isFunction$3(cb)) {
-            cb();
+
+          if (lv === level.REFLOW) {
+            _this2.__didMount();
           }
 
           _this2.emit(Event.REFRESH);

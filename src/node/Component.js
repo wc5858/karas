@@ -110,7 +110,6 @@ class Component extends Event {
       sr = new Text(s);
       sr.__ctx = ctx;
       sr.__defs = defs;
-      sr.__renderMode = renderMode;
       sr.__style = this.props.style || {};
       this.__shadowRoot = sr;
       return;
@@ -194,6 +193,7 @@ class Component extends Event {
       'virtualDom',
       'mask',
       'maskId',
+      'renderMode',
     ]).forEach(fn => {
       Object.defineProperty(this, fn, {
         get() {
@@ -313,6 +313,9 @@ class Component extends Event {
   '__renderAsMask',
   '__renderByMask',
   '__setCtx',
+  '__didMount',
+  '__willMount',
+  '__measure',
 ].forEach(fn => {
   Component.prototype[fn] = function() {
     let sr = this.shadowRoot;
