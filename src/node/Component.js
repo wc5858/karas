@@ -27,10 +27,15 @@ function diff(ovd, nvd) {
         for(let i = 0, len = Math.min(ol, nl); i < len; i++) {
           ovd = oc[i];
           nvd = nc[i];
-          if(ovd instanceof Component) {
+          let isOC = ovd instanceof Component;
+          let isNC = nvd instanceof Component;
+          if(isOC && isNC) {
+          }
+          else if(isNC) {}
+          if(isOC) {
             ovd = ovd.shadowRoot;
           }
-          if(nvd instanceof Component) {
+          if(isNC) {
             nvd = nvd.shadowRoot;
           }
           diff(ovd, nvd);
@@ -90,10 +95,12 @@ class Component extends Event {
           this.__traverseCss();
           this.__init();
           root.setRefreshLevel(level.REFLOW);
+        },
+        after: () => {
+          // 先进行diff，继承动画，然后销毁老的
           diff(ovd, this.shadowRoot);
           ovd.__destroy();
         },
-        after: cb,
       };
       root.addRefreshTask(this.__task);
     }
@@ -180,6 +187,11 @@ class Component extends Event {
   }
 
   __destroy() {
+    let { componentWillUnmount } = this;
+    if(isFunction(componentWillUnmount)) {
+      componentWillUnmount.call(this);
+      this.componentWillUnmount = null;
+    }
     this.root.delRefreshTask(this.__task);
     if(this.shadowRoot) {
       this.shadowRoot.__destroy();

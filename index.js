@@ -4371,12 +4371,14 @@
           for (var i = 0, len = Math.min(ol, nl); i < len; i++) {
             ovd = oc[i];
             nvd = nc[i];
+            var isOC = ovd instanceof Component;
+            var isNC = nvd instanceof Component;
 
-            if (ovd instanceof Component) {
+            if (isOC) {
               ovd = ovd.shadowRoot;
             }
 
-            if (nvd instanceof Component) {
+            if (isNC) {
               nvd = nvd.shadowRoot;
             }
 
@@ -4457,11 +4459,13 @@
               _this2.__init();
 
               root.setRefreshLevel(level.REFLOW);
+            },
+            after: function after() {
+              // 先进行diff，继承动画，然后销毁老的
               diff(ovd, _this2.shadowRoot);
 
               ovd.__destroy();
-            },
-            after: cb
+            }
           };
           root.addRefreshTask(this.__task);
         }
@@ -4567,6 +4571,13 @@
     }, {
       key: "__destroy",
       value: function __destroy() {
+        var componentWillUnmount = this.componentWillUnmount;
+
+        if (isFunction$1(componentWillUnmount)) {
+          componentWillUnmount.call(this);
+          this.componentWillUnmount = null;
+        }
+
         this.root.delRefreshTask(this.__task);
 
         if (this.shadowRoot) {
@@ -8152,7 +8163,7 @@
               for (var _i8 = children.length - 1; _i8 >= 0; _i8--) {
                 var _child = children[_i8];
 
-                if (_child instanceof Xom && isRelativeOrAbsolute(_child) || _child instanceof Component && _child.shadowRoot instanceof Xom && isRelativeOrAbsolute(_child.shadowRoot)) {
+                if (_child instanceof Xom && !isRelativeOrAbsolute(_child) || _child instanceof Component && _child.shadowRoot instanceof Xom && !isRelativeOrAbsolute(_child.shadowRoot)) {
                   if (_child.__emitEvent(e, force)) {
                     childWillResponse = true;
                   }
@@ -8204,7 +8215,7 @@
             for (var _i10 = children.length - 1; _i10 >= 0; _i10--) {
               var _child3 = children[_i10];
 
-              if (_child3 instanceof Xom && isRelativeOrAbsolute(_child3) || _child3 instanceof Component && _child3.shadowRoot instanceof Xom && isRelativeOrAbsolute(_child3.shadowRoot)) {
+              if (_child3 instanceof Xom && !isRelativeOrAbsolute(_child3) || _child3 instanceof Component && _child3.shadowRoot instanceof Xom && !isRelativeOrAbsolute(_child3.shadowRoot)) {
                 if (_child3.__emitEvent(e)) {
                   childWillResponse = true;
                 }
