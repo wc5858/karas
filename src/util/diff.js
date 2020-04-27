@@ -84,6 +84,10 @@ function diffDef(elem, od, nd) {
 }
 
 function diffChild(elem, ovd, nvd) {
+  // 当component里优化不更新时，vd会直接返回老引用
+  if(ovd === nvd) {
+    return;
+  }
   if(ovd.type === 'dom') {
     if(nvd.type === 'dom') {
       diffD2D(elem, ovd, nvd);

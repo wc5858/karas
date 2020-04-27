@@ -100,6 +100,9 @@ class Component extends Event {
           // 先进行diff，继承动画，然后销毁老的
           diff(ovd, this.shadowRoot);
           ovd.__destroy();
+          if(isFunction(cb)) {
+            cb();
+          }
         },
       };
       root.addRefreshTask(this.__task);
