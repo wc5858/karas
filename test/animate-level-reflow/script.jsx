@@ -20,9 +20,6 @@ let animation = t.animate([
   fill: 'forwards',
 });
 let input = document.querySelector('input');
-let n = 0;
-o.on(karas.Event.BEFORE_REFRESH, function(lv) {
-  if(n++ === 0) {
-    input.value = lv;
-  }
+o.once(karas.Event.REFRESH, function(lv) {
+  input.value = lv;
 });

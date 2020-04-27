@@ -274,7 +274,7 @@ class Root extends Dom {
       if(lv === level.REFLOW) {
         this.__didMount();
       }
-      this.emit(Event.REFRESH);
+      this.emit(Event.REFRESH, lv);
     });
   }
 

@@ -11758,7 +11758,7 @@
             _this2.__didMount();
           }
 
-          _this2.emit(Event.REFRESH);
+          _this2.emit(Event.REFRESH, lv);
         });
       }
     }, {
