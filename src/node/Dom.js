@@ -17,10 +17,6 @@ const TAG_NAME = {
   'span': true,
   'img': true,
 };
-const INLINE = {
-  'span': true,
-  'img': true,
-};
 
 function isRelativeOrAbsolute(node) {
   return ['relative', 'absolute'].indexOf(node.computedStyle.position) > -1;

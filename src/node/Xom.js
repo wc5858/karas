@@ -18,6 +18,11 @@ const { AUTO, PX, PERCENT, STRING } = unit;
 const { clone, int2rgba, equalArr } = util;
 const { calRelative, compute, repaint } = css;
 
+const INLINE = {
+  'span': true,
+  'img': true,
+};
+
 function renderBorder(renderMode, points, color, ctx, xom) {
   color = int2rgba(color);
   if(renderMode === mode.CANVAS) {
@@ -200,7 +205,12 @@ class Xom extends Node {
     }
     let { style, parent } = this;
     // 仅支持flex/block/inline/none
-    if(!style.display || ['flex', 'block', 'inline', 'none'].indexOf(style.display) === -1) {
+    if(!style.display || !{
+      flex: true,
+      block: true,
+      inline: true,
+      none: true,
+    }.hasOwnProperty(style.display)) {
       if(INLINE.hasOwnProperty(this.tagName)) {
         style.display = 'inline';
       }

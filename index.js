@@ -7050,6 +7050,10 @@
   var calRelative$1 = css.calRelative,
       compute$1 = css.compute,
       repaint$2 = css.repaint;
+  var INLINE = {
+    'span': true,
+    'img': true
+  };
 
   function renderBorder(renderMode, points, color, ctx, xom) {
     color = int2rgba$3(color);
@@ -7245,7 +7249,12 @@
         var style = this.style,
             parent = this.parent; // 仅支持flex/block/inline/none
 
-        if (!style.display || ['flex', 'block', 'inline', 'none'].indexOf(style.display) === -1) {
+        if (!style.display || !{
+          flex: true,
+          block: true,
+          inline: true,
+          none: true
+        }.hasOwnProperty(style.display)) {
           if (INLINE.hasOwnProperty(this.tagName)) {
             style.display = 'inline';
           } else {
