@@ -1100,9 +1100,10 @@ class Dom extends Xom {
       else if(child instanceof Component) {
         child.__didMount();
         let componentDidMount = child.componentDidMount;
-        if(!child.__hasDidMount && util.isFunction(componentDidMount)) {
-          child.__hasDidMount = true;
+        // 只执行一次
+        if(util.isFunction(componentDidMount)) {
           componentDidMount.call(child);
+          child.componentDidMount = null;
         }
       }
     });

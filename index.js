@@ -10298,11 +10298,11 @@
           } else if (child instanceof Component) {
             child.__didMount();
 
-            var componentDidMount = child.componentDidMount;
+            var componentDidMount = child.componentDidMount; // 只执行一次
 
-            if (!child.__hasDidMount && util.isFunction(componentDidMount)) {
-              child.__hasDidMount = true;
+            if (util.isFunction(componentDidMount)) {
               componentDidMount.call(child);
+              child.componentDidMount = null;
             }
           }
         });
