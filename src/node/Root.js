@@ -270,11 +270,11 @@ class Root extends Dom {
         this.node.__vd = nvd;
         this.node.__defs = nd;
       }
+      this.emit(Event.REFRESH, lv);
       // 只有布局改变才可能有component变更
       if(lv === level.REFLOW) {
         this.__didMount();
       }
-      this.emit(Event.REFRESH, lv);
     });
   }
 

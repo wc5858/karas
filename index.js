@@ -4349,7 +4349,8 @@
     }
   };
 
-  var isNil$2 = util.isNil;
+  var isNil$2 = util.isNil,
+      isFunction$1 = util.isFunction;
 
   function diff(ovd, nvd) {
     if (ovd !== nvd) {
@@ -4433,9 +4434,13 @@
         } // 构造函数中调用还未render
 
 
-        var o = this.shadowRoot;
+        var ovd = this.shadowRoot;
 
-        if (!o) {
+        if (!ovd) {
+          if (isFunction$1(cb)) {
+            cb();
+          }
+
           return;
         }
 
@@ -4445,7 +4450,7 @@
           root.delRefreshTask(this.__task);
           this.__task = {
             before: function before() {
-              var ovd = _this2.__traverse(o.ctx, o.defs, root.renderMode);
+              _this2.__traverse(ovd.ctx, ovd.defs, root.renderMode);
 
               _this2.__traverseCss();
 
@@ -4461,7 +4466,6 @@
     }, {
       key: "__traverse",
       value: function __traverse(ctx, defs, renderMode) {
-        var ovd = this.__shadowRoot;
         var sr = this.__shadowRoot = this.render(renderMode); // 可能返回的还是一个Component，递归处理
 
         while (sr instanceof Component) {
@@ -4491,8 +4495,6 @@
         if (!sr.isGeom) {
           sr.__traverse(ctx, defs, renderMode);
         }
-
-        return ovd;
       }
     }, {
       key: "__traverseCss",
@@ -4893,21 +4895,21 @@
     }
   };
 
-  var isFunction$1 = util.isFunction,
+  var isFunction$2 = util.isFunction,
       isObject = util.isObject;
 
   function traversal(list, diff, step) {
     if (step === 'before') {
       list.forEach(function (item) {
-        if (isObject(item) && isFunction$1(item.before)) {
+        if (isObject(item) && isFunction$2(item.before)) {
           item.before(diff);
         }
       });
     } else if (step === 'after') {
       list.forEach(function (item) {
-        if (isObject(item) && isFunction$1(item.after)) {
+        if (isObject(item) && isFunction$2(item.after)) {
           item.after(diff);
-        } else if (isFunction$1(item)) {
+        } else if (isFunction$2(item)) {
           item(diff);
         }
       });
@@ -5038,7 +5040,7 @@
         } // 包裹一层会导致添加后删除对比引用删不掉，需保存原有引用进行对比
 
 
-        var cb = isFunction$1(handle) ? function (diff) {
+        var cb = isFunction$2(handle) ? function (diff) {
           handle(diff);
 
           if (animate) {
@@ -5234,7 +5236,7 @@
       STRING$1 = unit.STRING,
       NUMBER$2 = unit.NUMBER;
   var isNil$3 = util.isNil,
-      isFunction$2 = util.isFunction,
+      isFunction$3 = util.isFunction,
       isNumber = util.isNumber,
       isObject$1 = util.isObject,
       clone$2 = util.clone,
@@ -5963,7 +5965,7 @@
   }
 
   function gotoOverload(options, cb) {
-    if (isFunction$2(options)) {
+    if (isFunction$3(options)) {
       cb = options;
       options = {};
     }
@@ -6155,7 +6157,7 @@
 
           _this2.emit(Event.FINISH);
 
-          if (isFunction$2(cb)) {
+          if (isFunction$3(cb)) {
             cb();
           }
         }; // 同步执行，用在finish()这种主动调用
@@ -6170,7 +6172,7 @@
             _this2.emit(Event.PLAY);
           }
 
-          if (isFunction$2(_this2.__playCb)) {
+          if (isFunction$3(_this2.__playCb)) {
             _this2.__playCb(diff, isDelay);
 
             _this2.__playCb = null;
@@ -6641,7 +6643,7 @@
 
             _this5.emit(Event.CANCEL);
 
-            if (isFunction$2(cb)) {
+            if (isFunction$3(cb)) {
               cb();
             }
           };
@@ -6729,7 +6731,7 @@
 
           _this6.__cancelTask();
 
-          if (isFunction$2(cb)) {
+          if (isFunction$3(cb)) {
             cb(diff);
           }
         });
@@ -7226,6 +7228,35 @@
             _this2.__style[i] = style[i];
           }
         });
+      }
+    }, {
+      key: "__init",
+      value: function __init() {
+        var ref = this.props.ref;
+
+        if (ref) {
+          var owner = this.host || this.root;
+
+          if (owner) {
+            owner.ref[ref] = this;
+          }
+        }
+
+        var style = this.style,
+            parent = this.parent; // 仅支持flex/block/inline/none
+
+        if (!style.display || ['flex', 'block', 'inline', 'none'].indexOf(style.display) === -1) {
+          if (INLINE.hasOwnProperty(this.tagName)) {
+            style.display = 'inline';
+          } else {
+            style.display = 'block';
+          }
+        } // absolute和flex孩子强制block
+
+
+        if (parent && style.display === 'inline' && (style.position === 'absolute' || parent.style.display === 'flex')) {
+          style.display = 'block';
+        }
       }
     }, {
       key: "__measure",
@@ -8658,9 +8689,12 @@
     _createClass(Geom, [{
       key: "__init",
       value: function __init() {
-        var style = this.style;
+        _get(_getPrototypeOf(Geom.prototype), "__init", this).call(this);
 
-        if (this.isMask) {
+        var style = this.style,
+            isMask = this.isMask;
+
+        if (isMask) {
           style.position = 'absolute';
           style.display = 'block';
           style.visibility = 'visible';
@@ -8670,15 +8704,6 @@
         }
 
         css.normalize(style, reset.geom);
-        var ref = this.props.ref;
-
-        if (ref) {
-          var owner = this.host || this.root;
-
-          if (owner) {
-            owner.ref[ref] = this;
-          }
-        }
       }
     }, {
       key: "__tryLayInline",
@@ -9069,10 +9094,6 @@
     'span': true,
     'img': true
   };
-  var INLINE = {
-    'span': true,
-    'img': true
-  };
 
   function isRelativeOrAbsolute$1(node) {
     return ['relative', 'absolute'].indexOf(node.computedStyle.position) > -1;
@@ -9101,7 +9122,7 @@
      * 2. 打平children中的数组，变成一维
      * 3. 合并相连的Text节点
      * 4. 检测inline不能包含block和flex
-     * 5. 设置parent和prev/next和ctx和defs和mode
+     * 5. 设置parent和prev/next和ctx和defs和renderMode
      */
 
 
@@ -9176,22 +9197,9 @@
       value: function __init() {
         var _this4 = this;
 
-        var style = this.style,
-            parent = this.parent; // 仅支持flex/block/inline/none
+        _get(_getPrototypeOf(Dom.prototype), "__init", this).call(this);
 
-        if (!style.display || ['flex', 'block', 'inline', 'none'].indexOf(style.display) === -1) {
-          if (INLINE.hasOwnProperty(this.tagName)) {
-            style.display = 'inline';
-          } else {
-            style.display = 'block';
-          }
-        } // absolute和flex孩子强制block
-
-
-        if (parent && style.display === 'inline' && (style.position === 'absolute' || parent.style.display === 'flex')) {
-          style.display = 'block';
-        } // 标准化处理，默认值、简写属性
-
+        var style = this.style; // 标准化处理，默认值、简写属性
 
         css.normalize(style, reset.dom);
         var isInline = style.display === 'inline';
@@ -9210,21 +9218,12 @@
             _this4.__flowChildren.push(item);
 
             if (isInline && !isText && item.style.display !== 'inline') {
-              throw new Error('inline can not contain block/flex');
+              throw new Error('Inline can not contain block/flex');
             }
           } else {
             _this4.__absChildren.push(item);
           }
         });
-        var ref = this.props.ref;
-
-        if (ref) {
-          var owner = this.host || this.root;
-
-          if (owner) {
-            owner.ref[ref] = this;
-          }
-        }
       } // 给定父宽度情况下，尝试行内放下后的剩余宽度，为负数即放不下
 
     }, {
@@ -11413,7 +11412,7 @@
 
   var isNil$6 = util.isNil,
       isObject$2 = util.isObject,
-      isFunction$3 = util.isFunction;
+      isFunction$4 = util.isFunction;
   var PX$8 = unit.PX;
 
   function getDom(dom) {
@@ -11748,14 +11747,14 @@
 
             _this2.node.__vd = nvd;
             _this2.node.__defs = nd;
-          } // 只有布局改变才可能有component变更
+          }
+
+          _this2.emit(Event.REFRESH, lv); // 只有布局改变才可能有component变更
 
 
           if (lv === level.REFLOW) {
             _this2.__didMount();
           }
-
-          _this2.emit(Event.REFRESH, lv);
         });
       }
     }, {
@@ -11777,7 +11776,7 @@
 
               if (clone.length) {
                 clone.forEach(function (item) {
-                  if (isObject$2(item) && isFunction$3(item.before)) {
+                  if (isObject$2(item) && isFunction$4(item.before)) {
                     item.before(diff);
                   }
                 });
@@ -11799,9 +11798,9 @@
             },
             after: function after(diff) {
               clone.forEach(function (item) {
-                if (isObject$2(item) && isFunction$3(item.after)) {
+                if (isObject$2(item) && isFunction$4(item.after)) {
                   item.after(diff);
-                } else if (isFunction$3(item)) {
+                } else if (isFunction$4(item)) {
                   item(diff);
                 }
               });
@@ -13161,7 +13160,7 @@
   };
 
   var isNil$7 = util.isNil,
-      isFunction$4 = util.isFunction,
+      isFunction$5 = util.isFunction,
       isPrimitive = util.isPrimitive,
       clone$5 = util.clone;
   var abbrCssProperty$1 = abbr.abbrCssProperty,
@@ -13229,7 +13228,7 @@
             } // 支持函数模式和值模式
 
 
-            if (isFunction$4(value)) {
+            if (isFunction$5(value)) {
               value = value(v);
             }
 

@@ -40,7 +40,7 @@ class Dom extends Xom {
    * 2. 打平children中的数组，变成一维
    * 3. 合并相连的Text节点
    * 4. 检测inline不能包含block和flex
-   * 5. 设置parent和prev/next和ctx和defs和mode
+   * 5. 设置parent和prev/next和ctx和defs和renderMode
    */
   __traverse(ctx, defs, renderMode) {
     let list = [];
@@ -98,20 +98,8 @@ class Dom extends Xom {
 
   // 合并设置style，包括继承和默认值，修改一些自动值和固定值，测量所有文字的宽度
   __init() {
-    let { style, parent } = this;
-    // 仅支持flex/block/inline/none
-    if(!style.display || ['flex', 'block', 'inline', 'none'].indexOf(style.display) === -1) {
-      if(INLINE.hasOwnProperty(this.tagName)) {
-        style.display = 'inline';
-      }
-      else {
-        style.display = 'block';
-      }
-    }
-    // absolute和flex孩子强制block
-    if(parent && style.display === 'inline' && (style.position === 'absolute' || parent.style.display === 'flex')) {
-      style.display = 'block';
-    }
+    super.__init();
+    let { style } = this;
     // 标准化处理，默认值、简写属性
     css.normalize(style, reset.dom);
     let isInline = style.display === 'inline';
@@ -128,20 +116,13 @@ class Dom extends Xom {
       if(isText || item.style.position !== 'absolute') {
         this.__flowChildren.push(item);
         if(isInline && !isText && item.style.display !== 'inline') {
-          throw new Error('inline can not contain block/flex');
+          throw new Error('Inline can not contain block/flex');
         }
       }
       else {
         this.__absChildren.push(item);
       }
     });
-    let ref = this.props.ref;
-    if(ref) {
-      let owner = this.host || this.root;
-      if(owner) {
-        owner.ref[ref] = this;
-      }
-    }
   }
 
   // 给定父宽度情况下，尝试行内放下后的剩余宽度，为负数即放不下

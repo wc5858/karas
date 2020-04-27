@@ -190,6 +190,30 @@ class Xom extends Node {
     });
   }
 
+  __init() {
+    let ref = this.props.ref;
+    if(ref) {
+      let owner = this.host || this.root;
+      if(owner) {
+        owner.ref[ref] = this;
+      }
+    }
+    let { style, parent } = this;
+    // 仅支持flex/block/inline/none
+    if(!style.display || ['flex', 'block', 'inline', 'none'].indexOf(style.display) === -1) {
+      if(INLINE.hasOwnProperty(this.tagName)) {
+        style.display = 'inline';
+      }
+      else {
+        style.display = 'block';
+      }
+    }
+    // absolute和flex孩子强制block
+    if(parent && style.display === 'inline' && (style.position === 'absolute' || parent.style.display === 'flex')) {
+      style.display = 'block';
+    }
+  }
+
   __measure() {
     if(!this.isGeom) {
       this.children.forEach(child => {
