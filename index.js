@@ -4673,7 +4673,7 @@
     return Component;
   }(Event);
 
-  ['__layout', '__tryLayInline', '__offsetX', '__offsetY', '__calAutoBasis', '__calMp', '__calAbs', '__renderAsMask', '__renderByMask', '__setCtx', '__didMount', '__willMount', '__measure', 'animate', 'removeAnimate'].forEach(function (fn) {
+  ['__layout', '__tryLayInline', '__offsetX', '__offsetY', '__calAutoBasis', '__calMp', '__calAbs', '__renderAsMask', '__renderByMask', '__setCtx', '__didMount', '__willMount', '__measure', 'animate', 'removeAnimate', 'clearAnimate'].forEach(function (fn) {
     Component.prototype[fn] = function () {
       var sr = this.shadowRoot;
 
@@ -8329,6 +8329,15 @@
             this.animationList.splice(i, 1);
           }
         }
+      }
+    }, {
+      key: "clearAnimate",
+      value: function clearAnimate() {
+        this.animationList.splice(0).forEach(function (o) {
+          o.cancel();
+
+          o.__destroy();
+        });
       }
     }, {
       key: "__computed",

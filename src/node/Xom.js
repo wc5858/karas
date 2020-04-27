@@ -1179,6 +1179,13 @@ class Xom extends Node {
     }
   }
 
+  clearAnimate() {
+    this.animationList.splice(0).forEach(o => {
+      o.cancel();
+      o.__destroy();
+    });
+  }
+
   __computed() {
     compute(this, this.isRoot);
     // 即便自己不需要计算，但children还要继续递归检查

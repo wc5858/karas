@@ -308,6 +308,7 @@ class Component extends Event {
   '__measure',
   'animate',
   'removeAnimate',
+  'clearAnimate',
 ].forEach(fn => {
   Component.prototype[fn] = function() {
     let sr = this.shadowRoot;
