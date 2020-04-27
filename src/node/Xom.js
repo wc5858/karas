@@ -167,7 +167,8 @@ class Xom extends Node {
     this.__matrixEvent = null;
     this.__animationList = [];
     this.__loadBgi = {
-      cb: function() {}, // 刷新回调函数，用以destroy取消用
+      cb: function() {
+      }, // 刷新回调函数，用以destroy取消用
     };
   }
 
@@ -1232,74 +1233,95 @@ class Xom extends Node {
   get tagName() {
     return this.__tagName;
   }
+
   get isRoot() {
     return !this.parent;
   }
+
   get isGeom() {
     return this.tagName.charAt(0) === '$';
   }
+
   get innerWidth() {
-    let { computedStyle: {
-      paddingRight,
-      paddingLeft,
-    } } = this;
+    let {
+      computedStyle: {
+        paddingRight,
+        paddingLeft,
+      }
+    } = this;
     return this.width
       + paddingLeft
       + paddingRight;
   }
+
   get innerHeight() {
-    let { computedStyle: {
-      paddingTop,
-      paddingBottom,
-    } } = this;
+    let {
+      computedStyle: {
+        paddingTop,
+        paddingBottom,
+      }
+    } = this;
     return this.height
       + paddingTop
       + paddingBottom;
   }
+
   get outerWidth() {
-    let { computedStyle: {
-      borderLeftWidth,
-      borderRightWidth,
-      marginRight,
-      marginLeft,
-    } } = this;
+    let {
+      computedStyle: {
+        borderLeftWidth,
+        borderRightWidth,
+        marginRight,
+        marginLeft,
+      }
+    } = this;
     return this.innerWidth
       + borderLeftWidth
       + borderRightWidth
       + marginLeft
       + marginRight;
   }
+
   get outerHeight() {
-    let { computedStyle: {
-      borderTopWidth,
-      borderBottomWidth,
-      marginTop,
-      marginBottom,
-    } } = this;
+    let {
+      computedStyle: {
+        borderTopWidth,
+        borderBottomWidth,
+        marginTop,
+        marginBottom,
+      }
+    } = this;
     return this.innerHeight
       + borderTopWidth
       + borderBottomWidth
       + marginTop
       + marginBottom;
   }
+
   get listener() {
     return this.__listener;
   }
+
   get matrix() {
     return this.__matrix;
   }
+
   get matrixEvent() {
     return this.__matrixEvent;
   }
+
   get id() {
     return this.__id;
   }
+
   get class() {
     return this.__class || [];
   }
+
   get animationList() {
     return this.__animationList;
   }
+
   get animating() {
     let { animationList } = this;
     for(let i = 0, len = animationList.length; i < len; i++) {
@@ -1310,6 +1332,7 @@ class Xom extends Node {
     }
     return false;
   }
+
   get animateStyle() {
     let { style, animationList } = this;
     let copy = clone(style);
@@ -1320,9 +1343,11 @@ class Xom extends Node {
     });
     return copy;
   }
+
   get currentStyle() {
     return this.__currentStyle;
   }
+
   get zIndexChildren() {
     if(this.isGeom) {
       return [];

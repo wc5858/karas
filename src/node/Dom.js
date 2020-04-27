@@ -1129,7 +1129,7 @@ class Dom extends Xom {
     flowChildren.forEach(item => {
       if(!item.isMask
         && (item instanceof Text
-        || item.computedStyle.position === 'static')) {
+          || item.computedStyle.position === 'static')) {
         item.__renderByMask(renderMode);
       }
     });
@@ -1163,18 +1163,23 @@ class Dom extends Xom {
   get tagName() {
     return this.__tagName;
   }
+
   get children() {
     return this.__children;
   }
+
   get flowChildren() {
     return this.__flowChildren;
   }
+
   get absChildren() {
     return this.__absChildren;
   }
+
   get lineGroups() {
     return this.__lineGroups;
   }
+
   get baseLine() {
     let len = this.lineGroups.length;
     if(len) {

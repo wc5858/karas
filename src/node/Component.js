@@ -267,26 +267,33 @@ class Component extends Event {
   get tagName() {
     return this.__tagName;
   }
+
   get children() {
     return this.__children;
   }
+
   get shadowRoot() {
     return this.__shadowRoot;
   }
+
   get root() {
     if(this.parent) {
       return this.parent.root;
     }
   }
+
   get parent() {
     return this.__parent;
   }
+
   get ref() {
     return this.__ref;
   }
+
   get state() {
     return this.__state;
   }
+
   set state(v) {
     this.__state = v;
   }
