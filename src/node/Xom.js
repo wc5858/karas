@@ -156,7 +156,9 @@ class Xom extends Node {
       if(/^on[a-zA-Z]/.test(k)) {
         k = k.slice(2).toLowerCase();
         let arr = this.__listener[k] = this.__listener[k] || [];
-        arr.push(v);
+        if(arr.indexOf(v) === -1) {
+          arr.push(v);
+        }
       }
       else if(k === 'id' && v) {
         this.__id = v;
@@ -172,8 +174,9 @@ class Xom extends Node {
     this.__matrixEvent = null;
     this.__animationList = [];
     this.__loadBgi = {
+      // 刷新回调函数，用以destroy取消用
       cb: function() {
-      }, // 刷新回调函数，用以destroy取消用
+      },
     };
   }
 
@@ -996,8 +999,8 @@ class Xom extends Node {
         // 先响应absolute/relative高优先级，综合zIndex和从后往前遮挡顺序
         for(let i = zIndex.length - 1; i >= 0; i--) {
           let child = zIndex[i];
-          if((child instanceof Xom || child instanceof Component)
-            && isRelativeOrAbsolute(child)) {
+          if((child instanceof Xom && isRelativeOrAbsolute(child)
+            || child instanceof Component && child.shadowRoot instanceof Xom && isRelativeOrAbsolute(child.shadowRoot))) {
             if(child.__emitEvent(e, force)) {
               childWillResponse = true;
             }
@@ -1007,8 +1010,8 @@ class Xom extends Node {
         if(!childWillResponse) {
           for(let i = children.length - 1; i >= 0; i--) {
             let child = children[i];
-            if((child instanceof Xom || child instanceof Component)
-              && !isRelativeOrAbsolute(child)) {
+            if((child instanceof Xom && isRelativeOrAbsolute(child)
+              || child instanceof Component && child.shadowRoot instanceof Xom && isRelativeOrAbsolute(child.shadowRoot))) {
               if(child.__emitEvent(e, force)) {
                 childWillResponse = true;
               }
@@ -1040,8 +1043,8 @@ class Xom extends Node {
       // 先响应absolute/relative高优先级，从后往前遮挡顺序
       for(let i = zIndex.length - 1; i >= 0; i--) {
         let child = zIndex[i];
-        if((child instanceof Xom || child instanceof Component)
-          && isRelativeOrAbsolute(child)) {
+        if((child instanceof Xom && isRelativeOrAbsolute(child)
+          || child instanceof Component && child.shadowRoot instanceof Xom && isRelativeOrAbsolute(child.shadowRoot))) {
           if(child.__emitEvent(e)) {
             childWillResponse = true;
           }
@@ -1051,8 +1054,8 @@ class Xom extends Node {
       if(!childWillResponse) {
         for(let i = children.length - 1; i >= 0; i--) {
           let child = children[i];
-          if((child instanceof Xom || child instanceof Component)
-            && !isRelativeOrAbsolute(child)) {
+          if((child instanceof Xom && isRelativeOrAbsolute(child)
+            || child instanceof Component && child.shadowRoot instanceof Xom && isRelativeOrAbsolute(child.shadowRoot))) {
             if(child.__emitEvent(e)) {
               childWillResponse = true;
             }

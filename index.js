@@ -4454,9 +4454,12 @@
 
               _this2.__traverseCss();
 
-              _this2.__init(ovd);
+              _this2.__init();
 
               root.setRefreshLevel(level.REFLOW);
+              diff(ovd, _this2.shadowRoot);
+
+              ovd.__destroy();
             },
             after: cb
           };
@@ -4510,7 +4513,7 @@
 
     }, {
       key: "__init",
-      value: function __init(ovd) {
+      value: function __init() {
         var _this3 = this;
 
         var sr = this.shadowRoot; // 返回text节点特殊处理，赋予基本样式
@@ -4532,7 +4535,10 @@
             if (/^on[a-zA-Z]/.test(k)) {
               k = k.slice(2).toLowerCase();
               var arr = sr.listener[k] = sr.listener[k] || [];
-              arr.push(v);
+
+              if (arr.indexOf(v) === -1) {
+                arr.push(v);
+              }
             } else if (/^on-[a-zA-Z\d_$]/.test(k)) {
               k = k.slice(3);
 
@@ -4541,25 +4547,8 @@
               });
             }
           });
-        } // 防止重复，第一次进来没ovd
-
-
-        if (ovd) {
-          // setState后会生成新的sr，继承动画考虑
-          diff(ovd, sr);
-
-          ovd.__destroy();
-
-          return;
         }
 
-        Object.keys(repaint$1.GEOM).concat(['x', 'y', 'ox', 'oy', 'sx', 'sy', 'width', 'height', 'outerWidth', 'outerHeight', 'style', 'animating', 'animationList', 'animateStyle', 'currentStyle', 'computedStyle', 'animateProps', 'currentProps', 'ctx', 'defs', 'baseLine', 'virtualDom', 'mask', 'maskId', 'renderMode', 'textWidth', 'content', 'lineBoxes', 'charWidthList', 'charWidth']).forEach(function (fn) {
-          Object.defineProperty(_this3, fn, {
-            get: function get() {
-              return this.shadowRoot[fn];
-            }
-          });
-        });
         var ref = this.props.ref;
 
         if (ref) {
@@ -4572,7 +4561,9 @@
       }
     }, {
       key: "render",
-      value: function render() {}
+      value: function render() {
+        throw new Error('Component must implement render()');
+      }
     }, {
       key: "__destroy",
       value: function __destroy() {
@@ -4675,11 +4666,22 @@
     return Component;
   }(Event);
 
+  Object.keys(repaint$1.GEOM).concat(['x', 'y', 'ox', 'oy', 'sx', 'sy', 'width', 'height', 'outerWidth', 'outerHeight', 'style', 'animating', 'animationList', 'animateStyle', 'currentStyle', 'computedStyle', 'animateProps', 'currentProps', 'ctx', 'defs', 'baseLine', 'virtualDom', 'mask', 'maskId', 'renderMode', 'textWidth', 'content', 'lineBoxes', 'charWidthList', 'charWidth']).forEach(function (fn) {
+    Object.defineProperty(Component.prototype, fn, {
+      get: function get() {
+        var sr = this.shadowRoot;
+
+        if (sr) {
+          return sr[fn];
+        }
+      }
+    });
+  });
   ['__layout', '__tryLayInline', '__offsetX', '__offsetY', '__calAutoBasis', '__calMp', '__calAbs', '__renderAsMask', '__renderByMask', '__setCtx', '__didMount', '__willMount', '__measure', 'animate', 'removeAnimate', 'clearAnimate'].forEach(function (fn) {
     Component.prototype[fn] = function () {
       var sr = this.shadowRoot;
 
-      if (sr && sr[fn]) {
+      if (sr && isFunction$1(sr[fn])) {
         return sr[fn].apply(sr, arguments);
       }
     };
@@ -7189,7 +7191,10 @@
         if (/^on[a-zA-Z]/.test(k)) {
           k = k.slice(2).toLowerCase();
           var arr = _this.__listener[k] = _this.__listener[k] || [];
-          arr.push(v);
+
+          if (arr.indexOf(v) === -1) {
+            arr.push(v);
+          }
         } else if (k === 'id' && v) {
           _this.__id = v;
         } else if (['class', 'className'].indexOf(k) > -1 && v) {
@@ -7205,8 +7210,8 @@
       _this.__matrixEvent = null;
       _this.__animationList = [];
       _this.__loadBgi = {
-        cb: function cb() {} // 刷新回调函数，用以destroy取消用
-
+        // 刷新回调函数，用以destroy取消用
+        cb: function cb() {}
       };
       return _this;
     } // 设置了css时，解析匹配
@@ -8135,7 +8140,7 @@
             for (var i = zIndex.length - 1; i >= 0; i--) {
               var child = zIndex[i];
 
-              if ((child instanceof Xom || child instanceof Component) && isRelativeOrAbsolute(child)) {
+              if (child instanceof Xom && isRelativeOrAbsolute(child) || child instanceof Component && child.shadowRoot instanceof Xom && isRelativeOrAbsolute(child.shadowRoot)) {
                 if (child.__emitEvent(e, force)) {
                   childWillResponse = true;
                 }
@@ -8147,7 +8152,7 @@
               for (var _i8 = children.length - 1; _i8 >= 0; _i8--) {
                 var _child = children[_i8];
 
-                if ((_child instanceof Xom || _child instanceof Component) && !isRelativeOrAbsolute(_child)) {
+                if (_child instanceof Xom && isRelativeOrAbsolute(_child) || _child instanceof Component && _child.shadowRoot instanceof Xom && isRelativeOrAbsolute(_child.shadowRoot)) {
                   if (_child.__emitEvent(e, force)) {
                     childWillResponse = true;
                   }
@@ -8187,7 +8192,7 @@
           for (var _i9 = zIndex.length - 1; _i9 >= 0; _i9--) {
             var _child2 = zIndex[_i9];
 
-            if ((_child2 instanceof Xom || _child2 instanceof Component) && isRelativeOrAbsolute(_child2)) {
+            if (_child2 instanceof Xom && isRelativeOrAbsolute(_child2) || _child2 instanceof Component && _child2.shadowRoot instanceof Xom && isRelativeOrAbsolute(_child2.shadowRoot)) {
               if (_child2.__emitEvent(e)) {
                 childWillResponse = true;
               }
@@ -8199,7 +8204,7 @@
             for (var _i10 = children.length - 1; _i10 >= 0; _i10--) {
               var _child3 = children[_i10];
 
-              if ((_child3 instanceof Xom || _child3 instanceof Component) && !isRelativeOrAbsolute(_child3)) {
+              if (_child3 instanceof Xom && isRelativeOrAbsolute(_child3) || _child3 instanceof Component && _child3.shadowRoot instanceof Xom && isRelativeOrAbsolute(_child3.shadowRoot)) {
                 if (_child3.__emitEvent(e)) {
                   childWillResponse = true;
                 }
@@ -10484,7 +10489,7 @@
             width = currentStyle.width,
             height = currentStyle.height;
 
-        if (isDestroyed || display === 'none') {
+        if (isDestroyed || display === 'none' || !src) {
           return;
         }
 

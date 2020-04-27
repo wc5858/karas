@@ -88,8 +88,10 @@ class Component extends Event {
         before: () => {
           this.__traverse(ovd.ctx, ovd.defs, root.renderMode);
           this.__traverseCss();
-          this.__init(ovd);
+          this.__init();
           root.setRefreshLevel(level.REFLOW);
+          diff(ovd, this.shadowRoot);
+          ovd.__destroy();
         },
         after: cb,
       };
@@ -134,7 +136,7 @@ class Component extends Event {
   }
 
   // 组件传入的样式需覆盖shadowRoot的
-  __init(ovd) {
+  __init() {
     let sr = this.shadowRoot;
     // 返回text节点特殊处理，赋予基本样式
     if(sr instanceof Text) {
@@ -152,7 +154,9 @@ class Component extends Event {
         if(/^on[a-zA-Z]/.test(k)) {
           k = k.slice(2).toLowerCase();
           let arr = sr.listener[k] = sr.listener[k] || [];
-          arr.push(v);
+          if(arr.indexOf(v) === -1) {
+            arr.push(v);
+          }
         }
         else if(/^on-[a-zA-Z\d_$]/.test(k)) {
           k = k.slice(3);
@@ -162,51 +166,6 @@ class Component extends Event {
         }
       });
     }
-    // 防止重复，第一次进来没ovd
-    if(ovd) {
-      // setState后会生成新的sr，继承动画考虑
-      diff(ovd, sr);
-      ovd.__destroy();
-      return;
-    }
-    Object.keys(repaint.GEOM).concat([
-      'x',
-      'y',
-      'ox',
-      'oy',
-      'sx',
-      'sy',
-      'width',
-      'height',
-      'outerWidth',
-      'outerHeight',
-      'style',
-      'animating',
-      'animationList',
-      'animateStyle',
-      'currentStyle',
-      'computedStyle',
-      'animateProps',
-      'currentProps',
-      'ctx',
-      'defs',
-      'baseLine',
-      'virtualDom',
-      'mask',
-      'maskId',
-      'renderMode',
-      'textWidth',
-      'content',
-      'lineBoxes',
-      'charWidthList',
-      'charWidth',
-    ]).forEach(fn => {
-      Object.defineProperty(this, fn, {
-        get() {
-          return this.shadowRoot[fn];
-        },
-      });
-    });
     let ref = this.props.ref;
     if(ref) {
       let owner = this.parent.host || this.root;
@@ -217,6 +176,7 @@ class Component extends Event {
   }
 
   render() {
+    throw new Error('Component must implement render()');
   }
 
   __destroy() {
@@ -300,6 +260,48 @@ class Component extends Event {
   }
 }
 
+Object.keys(repaint.GEOM).concat([
+  'x',
+  'y',
+  'ox',
+  'oy',
+  'sx',
+  'sy',
+  'width',
+  'height',
+  'outerWidth',
+  'outerHeight',
+  'style',
+  'animating',
+  'animationList',
+  'animateStyle',
+  'currentStyle',
+  'computedStyle',
+  'animateProps',
+  'currentProps',
+  'ctx',
+  'defs',
+  'baseLine',
+  'virtualDom',
+  'mask',
+  'maskId',
+  'renderMode',
+  'textWidth',
+  'content',
+  'lineBoxes',
+  'charWidthList',
+  'charWidth',
+]).forEach(fn => {
+  Object.defineProperty(Component.prototype, fn, {
+    get() {
+      let sr = this.shadowRoot;
+      if(sr) {
+        return sr[fn];
+      }
+    },
+  });
+});
+
 [
   '__layout',
   '__tryLayInline',
@@ -320,7 +322,7 @@ class Component extends Event {
 ].forEach(fn => {
   Component.prototype[fn] = function() {
     let sr = this.shadowRoot;
-    if(sr && sr[fn]) {
+    if(sr && isFunction(sr[fn])) {
       return sr[fn].apply(sr, arguments);
     }
   };
