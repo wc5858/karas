@@ -2896,7 +2896,13 @@
     }, {
       key: "baseLine",
       get: function get() {
-        var last = this.lineBoxes[this.lineBoxes.length - 1];
+        var lineBoxes = this.lineBoxes;
+
+        if (!lineBoxes.length) {
+          return 0;
+        }
+
+        var last = lineBoxes[lineBoxes.length - 1];
         return last.y - this.y + last.baseLine;
       }
     }, {
@@ -4533,7 +4539,7 @@
               });
             }
           });
-        } // 防止重复
+        } // 防止重复，第一次进来没ovd
 
 
         if (ovd) {
@@ -4545,7 +4551,7 @@
           return;
         }
 
-        Object.keys(repaint$1.GEOM).concat(['x', 'y', 'ox', 'oy', 'sx', 'sy', 'width', 'height', 'outerWidth', 'outerHeight', 'style', 'animating', 'animationList', 'animateStyle', 'currentStyle', 'computedStyle', 'animateProps', 'currentProps', 'ctx', 'defs', 'baseLine', 'virtualDom', 'mask', 'maskId', 'renderMode']).forEach(function (fn) {
+        Object.keys(repaint$1.GEOM).concat(['x', 'y', 'ox', 'oy', 'sx', 'sy', 'width', 'height', 'outerWidth', 'outerHeight', 'style', 'animating', 'animationList', 'animateStyle', 'currentStyle', 'computedStyle', 'animateProps', 'currentProps', 'ctx', 'defs', 'baseLine', 'virtualDom', 'mask', 'maskId', 'renderMode', 'textWidth', 'content', 'lineBoxes', 'charWidthList', 'charWidth']).forEach(function (fn) {
           Object.defineProperty(_this3, fn, {
             get: function get() {
               return this.shadowRoot[fn];
@@ -4596,24 +4602,6 @@
         if (res) {
           e.target = this;
           return true;
-        }
-      }
-    }, {
-      key: "animate",
-      value: function animate(list, option) {
-        var sr = this.shadowRoot;
-
-        if (!(sr instanceof Text)) {
-          return sr.animate(list, option);
-        }
-      }
-    }, {
-      key: "removeAnimate",
-      value: function removeAnimate(o) {
-        var sr = this.shadowRoot;
-
-        if (!(sr instanceof Text)) {
-          return sr.removeAnimate(o);
         }
       }
     }, {
@@ -4685,7 +4673,7 @@
     return Component;
   }(Event);
 
-  ['__layout', '__layoutAbs', '__tryLayInline', '__offsetX', '__offsetY', '__calAutoBasis', '__calMp', '__calAbs', '__renderAsMask', '__renderByMask', '__setCtx', '__didMount', '__willMount', '__measure'].forEach(function (fn) {
+  ['__layout', '__tryLayInline', '__offsetX', '__offsetY', '__calAutoBasis', '__calMp', '__calAbs', '__renderAsMask', '__renderByMask', '__setCtx', '__didMount', '__willMount', '__measure', 'animate', 'removeAnimate'].forEach(function (fn) {
     Component.prototype[fn] = function () {
       var sr = this.shadowRoot;
 
@@ -9318,7 +9306,7 @@
 
 
         flowChildren.forEach(function (item) {
-          if (item instanceof Xom || item instanceof Component) {
+          if (item instanceof Xom || item instanceof Component || item.shadowRoot instanceof Xom) {
             var _item$__calAutoBasis = item.__calAutoBasis(isDirectionRow, w, h, true),
                 b2 = _item$__calAutoBasis.b,
                 min2 = _item$__calAutoBasis.min,
@@ -9413,7 +9401,7 @@
 
         var lineGroup = new LineGroup(x, y);
         flowChildren.forEach(function (item) {
-          if (item instanceof Xom || item instanceof Component) {
+          if (item instanceof Xom || item instanceof Component && item.shadowRoot instanceof Xom) {
             if (item.currentStyle.display === 'inline') {
               // inline开头，不用考虑是否放得下直接放
               if (x === data.x) {
@@ -9633,7 +9621,7 @@
         var basisSum = 0;
         var maxSum = 0;
         flowChildren.forEach(function (item) {
-          if (item instanceof Xom || item instanceof Component) {
+          if (item instanceof Xom || item instanceof Component && item.shadowRoot instanceof Xom) {
             // abs虚拟布局计算时纵向也是看横向宽度
             var _item$__calAutoBasis2 = item.__calAutoBasis(isVirtual ? true : isDirectionRow, w, h),
                 b = _item$__calAutoBasis2.b,
@@ -9736,7 +9724,7 @@
 
           main = Math.max(main, minList[i]);
 
-          if (item instanceof Xom || item instanceof Component) {
+          if (item instanceof Xom || item instanceof Component && item.shadowRoot instanceof Xom) {
             var _currentStyle2 = item.currentStyle,
                 computedStyle = item.computedStyle;
             var display = _currentStyle2.display,
@@ -9947,7 +9935,7 @@
 
         var lineGroup = new LineGroup(x, y);
         flowChildren.forEach(function (item) {
-          if (item instanceof Xom || item instanceof Component) {
+          if (item instanceof Xom || item instanceof Component && item.shadowRoot instanceof Xom) {
             // inline开头，不用考虑是否放得下直接放
             if (x === data.x) {
               lineGroup.add(item);

@@ -222,7 +222,7 @@ class Dom extends Xom {
     }
     // 递归children取最大值
     flowChildren.forEach(item => {
-      if(item instanceof Xom || item instanceof Component) {
+      if(item instanceof Xom || item instanceof Component || item.shadowRoot instanceof Xom) {
         let { b: b2, min: min2, max: max2 } = item.__calAutoBasis(isDirectionRow, w, h, true);
         b = Math.max(b, b2);
         min = Math.max(min, min2);
@@ -301,7 +301,7 @@ class Dom extends Xom {
     // 递归布局，将inline的节点组成lineGroup一行
     let lineGroup = new LineGroup(x, y);
     flowChildren.forEach(item => {
-      if(item instanceof Xom || item instanceof Component) {
+      if(item instanceof Xom || item instanceof Component && item.shadowRoot instanceof Xom) {
         if(item.currentStyle.display === 'inline') {
           // inline开头，不用考虑是否放得下直接放
           if(x === data.x) {
@@ -491,7 +491,7 @@ class Dom extends Xom {
     let basisSum = 0;
     let maxSum = 0;
     flowChildren.forEach(item => {
-      if(item instanceof Xom || item instanceof Component) {
+      if(item instanceof Xom || item instanceof Component && item.shadowRoot instanceof Xom) {
         // abs虚拟布局计算时纵向也是看横向宽度
         let { b, min, max } = item.__calAutoBasis(isVirtual ? true : isDirectionRow, w, h);
         if(isVirtual) {
@@ -583,7 +583,7 @@ class Dom extends Xom {
       }
       // 主轴长度的最小值不能小于元素的最小长度，比如横向时的字符宽度
       main = Math.max(main, minList[i]);
-      if(item instanceof Xom || item instanceof Component) {
+      if(item instanceof Xom || item instanceof Component && item.shadowRoot instanceof Xom) {
         let { currentStyle, computedStyle } = item;
         let {
           display,
@@ -780,7 +780,7 @@ class Dom extends Xom {
     // 递归布局，将inline的节点组成lineGroup一行
     let lineGroup = new LineGroup(x, y);
     flowChildren.forEach(item => {
-      if(item instanceof Xom || item instanceof Component) {
+      if(item instanceof Xom || item instanceof Component && item.shadowRoot instanceof Xom) {
         // inline开头，不用考虑是否放得下直接放
         if(x === data.x) {
           lineGroup.add(item);

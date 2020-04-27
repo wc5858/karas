@@ -161,7 +161,7 @@ class Component extends Event {
         }
       });
     }
-    // 防止重复
+    // 防止重复，第一次进来没ovd
     if(ovd) {
       // setState后会生成新的sr，继承动画考虑
       diff(ovd, sr);
@@ -194,6 +194,11 @@ class Component extends Event {
       'mask',
       'maskId',
       'renderMode',
+      'textWidth',
+      'content',
+      'lineBoxes',
+      'charWidthList',
+      'charWidth',
     ]).forEach(fn => {
       Object.defineProperty(this, fn, {
         get() {
@@ -235,20 +240,6 @@ class Component extends Event {
     if(res) {
       e.target = this;
       return true;
-    }
-  }
-
-  animate(list, option) {
-    let sr = this.shadowRoot;
-    if(!(sr instanceof Text)) {
-      return sr.animate(list, option);
-    }
-  }
-
-  removeAnimate(o) {
-    let sr = this.shadowRoot;
-    if(!(sr instanceof Text)) {
-      return sr.removeAnimate(o);
     }
   }
 
@@ -303,7 +294,6 @@ class Component extends Event {
 
 [
   '__layout',
-  '__layoutAbs',
   '__tryLayInline',
   '__offsetX',
   '__offsetY',
@@ -316,6 +306,8 @@ class Component extends Event {
   '__didMount',
   '__willMount',
   '__measure',
+  'animate',
+  'removeAnimate',
 ].forEach(fn => {
   Component.prototype[fn] = function() {
     let sr = this.shadowRoot;
