@@ -136,7 +136,7 @@ function parse(karas, json, animateRecords, vars, hash) {
   }
   if(Array.isArray(json)) {
     return json.map(item => {
-      return parse(karas, item, animateRecords, vars);
+      return parse(karas, item, animateRecords, vars, hash);
     });
   }
   let { library, libraryId } = json;

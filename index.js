@@ -13405,7 +13405,7 @@
 
     if (Array.isArray(json)) {
       return json.map(function (item) {
-        return parse$1(karas, item, animateRecords, vars);
+        return parse$1(karas, item, animateRecords, vars, hash);
       });
     }
 
@@ -13579,7 +13579,7 @@
 
       var animateRecords = [];
 
-      var vd = parse$1(this, json, animateRecords, options.vars); // 有dom时parse作为根方法渲染
+      var vd = parse$1(this, json, animateRecords, options.vars, {}); // 有dom时parse作为根方法渲染
 
 
       if (dom) {
