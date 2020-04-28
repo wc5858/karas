@@ -5547,9 +5547,25 @@
     var n = next[k];
 
     if (k === 'transform') {
-      // transform特殊被初始化转成matrix矩阵，直接计算差值
-      var pm = p[0][1];
-      var nm = n[0][1];
+      // transform因默认值null很特殊，不存在时需给默认矩阵
+      if (!p && !n) {
+        return;
+      }
+
+      var pm, nm;
+
+      if (p) {
+        pm = p[0][1];
+      } else {
+        pm = [1, 0, 0, 1, 0, 0];
+      }
+
+      if (n) {
+        nm = n[0][1];
+      } else {
+        nm = [1, 0, 0, 1, 0, 0];
+      } // transform特殊被初始化转成matrix矩阵，直接计算差值
+
 
       if (equalArr$1(pm, nm)) {
         return;
@@ -5904,8 +5920,12 @@
 
       if (item.hasOwnProperty('n')) {
         style[k] = n;
-      } // transform特殊处理，只有1个matrix
+      } // transform特殊处理，只有1个matrix，有可能不存在，需给默认矩阵
       else if (k === 'transform') {
+          if (!st) {
+            st = style[k] = [['matrix', [1, 0, 0, 1, 0, 0]]];
+          }
+
           for (var i = 0; i < 6; i++) {
             st[0][1][i] += v[i] * percent;
           }
@@ -8361,16 +8381,20 @@
       }
     }, {
       key: "animate",
-      value: function animate(list, option, underControl) {
+      value: function animate(list, options, underControl) {
         if (this.isDestroyed) {
           return;
         }
 
-        var animation = new Animation(this, list, option);
+        var animation = new Animation(this, list, options);
         this.animationList.push(animation);
 
         if (underControl) {
           this.root.animateController.add(animation);
+        }
+
+        if (options.hasOwnProperty('autoPlay') && !options.autoPlay) {
+          return animation;
         }
 
         return animation.play();
@@ -11208,7 +11232,8 @@
     return Defs;
   }();
 
-  var isNil$5 = util.isNil;
+  var isNil$5 = util.isNil,
+      isFunction$4 = util.isFunction;
   var LIST = ['playbackRate', 'iterations', 'fps', 'spfLimit', 'delay', 'endDelay', 'duration', 'direction', 'fill', 'playCount', 'currentTime', 'easing'];
 
   function replaceOption(target, globalValue, key, vars) {
@@ -11286,9 +11311,7 @@
       key: "__action",
       value: function __action(k, args) {
         this.list.forEach(function (item) {
-          item.target.animationList.forEach(function (animate) {
-            animate[k].apply(animate, args);
-          });
+          item[k].apply(item, args);
         });
       }
     }, {
@@ -11307,12 +11330,18 @@
 
             if (Array.isArray(animate)) {
               animate.forEach(function (animate) {
-                var o = target.animate(animate.value, animate.options);
+                var value = animate.value,
+                    options = animate.options;
+                options.autoPlay = false;
+                var o = target.animate(value, options);
 
                 _this.add(o);
               });
             } else {
-              var o = target.animate(animate.value, animate.options);
+              var value = animate.value,
+                  options = animate.options;
+              options.autoPlay = false;
+              var o = target.animate(value, options);
 
               _this.add(o);
             }
@@ -11321,10 +11350,19 @@
       }
     }, {
       key: "play",
-      value: function play() {
+      value: function play(cb) {
         this.init();
+        var once = true;
 
-        this.__action('play');
+        this.__action('play', [cb && function (diff) {
+          if (once) {
+            once = false;
+
+            if (isFunction$4(cb)) {
+              cb(diff);
+            }
+          }
+        }]);
       }
     }, {
       key: "pause",
@@ -11333,13 +11371,33 @@
       }
     }, {
       key: "cancel",
-      value: function cancel() {
-        this.__action('cancel');
+      value: function cancel(cb) {
+        var once = true;
+
+        this.__action('cancel', [cb && function (diff) {
+          if (once) {
+            once = false;
+
+            if (isFunction$4(cb)) {
+              cb(diff);
+            }
+          }
+        }]);
       }
     }, {
       key: "finish",
-      value: function finish() {
-        this.__action('finish');
+      value: function finish(cb) {
+        var once = true;
+
+        this.__action('finish', [cb && function (diff) {
+          if (once) {
+            once = false;
+
+            if (isFunction$4(cb)) {
+              cb(diff);
+            }
+          }
+        }]);
       }
     }, {
       key: "gotoAndStop",
@@ -11347,10 +11405,13 @@
         this.init();
         var once = true;
 
-        this.__action('gotoAndStop', [v, options, function (diff) {
+        this.__action('gotoAndStop', [v, options, cb && function (diff) {
           if (once) {
             once = false;
-            cb && cb(diff);
+
+            if (isFunction$4(cb)) {
+              cb(diff);
+            }
           }
         }]);
       }
@@ -11360,10 +11421,13 @@
         this.init();
         var once = true;
 
-        this.__action('gotoAndPlay', [v, options, function (diff) {
+        this.__action('gotoAndPlay', [v, options, cb && function (diff) {
           if (once) {
             once = false;
-            cb && cb(diff);
+
+            if (isFunction$4(cb)) {
+              cb(diff);
+            }
           }
         }]);
       }
@@ -11446,7 +11510,7 @@
 
   var isNil$6 = util.isNil,
       isObject$2 = util.isObject,
-      isFunction$4 = util.isFunction;
+      isFunction$5 = util.isFunction;
   var PX$8 = unit.PX;
 
   function getDom(dom) {
@@ -11810,7 +11874,7 @@
 
               if (clone.length) {
                 clone.forEach(function (item) {
-                  if (isObject$2(item) && isFunction$4(item.before)) {
+                  if (isObject$2(item) && isFunction$5(item.before)) {
                     item.before(diff);
                   }
                 });
@@ -11832,9 +11896,9 @@
             },
             after: function after(diff) {
               clone.forEach(function (item) {
-                if (isObject$2(item) && isFunction$4(item.after)) {
+                if (isObject$2(item) && isFunction$5(item.after)) {
                   item.after(diff);
-                } else if (isFunction$4(item)) {
+                } else if (isFunction$5(item)) {
                   item(diff);
                 }
               });
@@ -13194,7 +13258,7 @@
   };
 
   var isNil$7 = util.isNil,
-      isFunction$5 = util.isFunction,
+      isFunction$6 = util.isFunction,
       isPrimitive = util.isPrimitive,
       clone$5 = util.clone;
   var abbrCssProperty$1 = abbr.abbrCssProperty,
@@ -13262,7 +13326,7 @@
             } // 支持函数模式和值模式
 
 
-            if (isFunction$5(value)) {
+            if (isFunction$6(value)) {
               value = value(v);
             }
 
@@ -13534,7 +13598,7 @@
         ac.__op(options); // 直接的json里的animateRecords，再加上递归的parse的json的（第一次render布局时处理）动画一并播放
 
 
-        if (options.autoPlay !== false) {
+        if (!options.hasOwnProperty('autoPlay') || options.autoPlay) {
           ac.play();
         }
       } // 递归的parse，如果有动画，此时还没root，先暂存下来，等上面的root的render第一次布局时收集
