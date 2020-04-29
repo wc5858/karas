@@ -95,6 +95,7 @@ function linkLibrary(item, hash) {
         let libraryItem = hash[libraryId];
         // 规定图层child只有init和动画，属性和子图层来自库
         if(libraryItem) {
+          child.libraryId = null;
           linkChild(child, libraryItem);
         }
         else {
@@ -161,7 +162,7 @@ function parse(karas, json, animateRecords, vars, hash) {
     json.libraryId = null;
   }
   // ide中库文件的child一定有libraryId，有library时一定不会有libraryId
-  else if(!isNil(libraryId)) {
+  else if(!isNil(libraryId) && hash) {
     let libraryItem = hash[libraryId];
     // 规定图层child只有init和动画，tagName和属性和子图层来自库
     if(libraryItem) {
@@ -175,7 +176,7 @@ function parse(karas, json, animateRecords, vars, hash) {
   }
   let { tagName, props = {}, children = [], animate = [] } = json;
   if(!tagName) {
-    throw new Error('Dom must have a tagName');
+    throw new Error('Dom must have a tagName: ' + json);
   }
   let style = props.style;
   abbr2full(style, abbrCssProperty);

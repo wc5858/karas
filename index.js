@@ -13363,6 +13363,7 @@
           var libraryItem = hash[libraryId]; // 规定图层child只有init和动画，属性和子图层来自库
 
           if (libraryItem) {
+            child.libraryId = null;
             linkChild(child, libraryItem);
           } else {
             throw new Error('Link library item miss id: ' + libraryId);
@@ -13432,7 +13433,7 @@
       json.library = null;
       json.libraryId = null;
     } // ide中库文件的child一定有libraryId，有library时一定不会有libraryId
-    else if (!isNil$7(libraryId)) {
+    else if (!isNil$7(libraryId) && hash) {
         var libraryItem = hash[libraryId]; // 规定图层child只有init和动画，tagName和属性和子图层来自库
 
         if (libraryItem) {
@@ -13453,7 +13454,7 @@
         animate = _json$animate === void 0 ? [] : _json$animate;
 
     if (!tagName) {
-      throw new Error('Dom must have a tagName');
+      throw new Error('Dom must have a tagName: ' + json);
     }
 
     var style = props.style;
@@ -13588,7 +13589,7 @@
 
       var animateRecords = [];
 
-      var vd = parse$1(this, json, animateRecords, options.vars, {}); // 有dom时parse作为根方法渲染
+      var vd = parse$1(this, json, animateRecords, options.vars); // 有dom时parse作为根方法渲染
 
 
       if (dom) {
