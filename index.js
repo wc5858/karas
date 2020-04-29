@@ -13363,7 +13363,6 @@
           var libraryItem = hash[libraryId]; // 规定图层child只有init和动画，属性和子图层来自库
 
           if (libraryItem) {
-            child.libraryId = null;
             linkChild(child, libraryItem);
           } else {
             throw new Error('Link library item miss id: ' + libraryId);
@@ -13390,7 +13389,9 @@
       if (k.indexOf('var-') === 0 && !child.hasOwnProperty(k)) {
         child[k] = libraryItem[k];
       }
-    }); // 规定图层实例化的属性和样式在init上，优先使用init，然后才取原型链的props
+    }); // 删除以免二次解析
+
+    child.libraryId = null; // 规定图层实例化的属性和样式在init上，优先使用init，然后才取原型链的props
 
     var init = child.init;
 
@@ -13402,7 +13403,8 @@
       if (style) {
         Object.assign(style, init.style);
         props.style = style;
-      }
+      } // 删除以免二次解析
+
 
       child.init = null;
     }
@@ -13437,9 +13439,7 @@
         var libraryItem = hash[libraryId]; // 规定图层child只有init和动画，tagName和属性和子图层来自库
 
         if (libraryItem) {
-          linkChild(json, libraryItem); // 删除以免二次解析
-
-          json.libraryId = null;
+          linkChild(json, libraryItem);
         } else {
           throw new Error('Link library miss id: ' + libraryId);
         }

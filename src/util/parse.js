@@ -95,7 +95,6 @@ function linkLibrary(item, hash) {
         let libraryItem = hash[libraryId];
         // 规定图层child只有init和动画，属性和子图层来自库
         if(libraryItem) {
-          child.libraryId = null;
           linkChild(child, libraryItem);
         }
         else {
@@ -124,6 +123,8 @@ function linkChild(child, libraryItem) {
       child[k] = libraryItem[k];
     }
   });
+  // 删除以免二次解析
+  child.libraryId = null;
   // 规定图层实例化的属性和样式在init上，优先使用init，然后才取原型链的props
   let { init } = child;
   if(init) {
@@ -135,6 +136,7 @@ function linkChild(child, libraryItem) {
       Object.assign(style, init.style);
       props.style = style;
     }
+    // 删除以免二次解析
     child.init = null;
   }
 }
@@ -167,8 +169,6 @@ function parse(karas, json, animateRecords, vars, hash) {
     // 规定图层child只有init和动画，tagName和属性和子图层来自库
     if(libraryItem) {
       linkChild(json, libraryItem);
-      // 删除以免二次解析
-      json.libraryId = null;
     }
     else {
       throw new Error('Link library miss id: ' + libraryId);
