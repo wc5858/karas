@@ -13336,6 +13336,15 @@
       });
     }
   }
+  /**
+   * 遍历一遍library的一级，将一级的id存到hash上，无需递归二级，
+   * 因为顺序前提要求排好且无循环依赖，所以被用到的一定在前面出现，
+   * 一般是无children的元件在前，包含children的div在后
+   * 只需将可能存在的children在遍历link一遍即可，如果children里有递归，前面因为出现过已经link过了
+   * @param item：library的一级孩子
+   * @param hash：存放library的key/value引用
+   */
+
 
   function linkLibrary(item, hash) {
     var id = item.id,
@@ -13351,22 +13360,23 @@
             return;
           }
 
-          if (!hash.hasOwnProperty(libraryId)) {
-            linkLibrary(child, hash);
-          }
-
           var libraryItem = hash[libraryId]; // 规定图层child只有init和动画，属性和子图层来自库
 
           if (libraryItem) {
             linkChild(child, libraryItem);
           } else {
-            throw new Error('Library item miss ID: ' + libraryId);
+            throw new Error('Link library item miss id: ' + libraryId);
           }
         }
       });
-    }
+    } // library中一定有id，因为是一级，二级+特殊需求才会出现放开
 
-    hash[id] = item;
+
+    if (id) {
+      hash[id] = item;
+    } else {
+      throw new Error('Library item miss id: ' + id);
+    }
   }
 
   function linkChild(child, libraryItem) {
@@ -13379,11 +13389,8 @@
       if (k.indexOf('var-') === 0 && !child.hasOwnProperty(k)) {
         child[k] = libraryItem[k];
       }
-    }); // linkInit(child);
-  }
+    }); // 规定图层实例化的属性和样式在init上，优先使用init，然后才取原型链的props
 
-  function linkInit(child) {
-    // 规定图层实例化的属性和样式在init上，优先使用init，然后才取原型链的props
     var init = child.init;
 
     if (init) {
@@ -13395,6 +13402,8 @@
         Object.assign(style, init.style);
         props.style = style;
       }
+
+      child.init = null;
     }
   }
 
@@ -13413,11 +13422,12 @@
         libraryId = json.libraryId; // 有library说明是个mc节点，不会有init/animate和children链接，是个正常节点
 
     if (Array.isArray(library)) {
-      hash = {}; // 强制要求library的文件是排好顺序的，即元件和被引用类型在前面，引用的在后面，另外没有循环引用
+      hash = {}; // 强制要求library的文件是排好顺序的，即元件和被引用类型在前面，引用的在后面，
+      // 另外没有循环引用，没有递归library，先遍历设置引用，再递归进行连接
 
       library.forEach(function (item) {
         linkLibrary(item, hash);
-      }); // 删除以免二次解析
+      }); // 删除以免二次解析，有library一定没libraryId
 
       json.library = null;
       json.libraryId = null;
@@ -13430,7 +13440,7 @@
 
           json.libraryId = null;
         } else {
-          throw new Error('Library miss ID: ' + libraryId);
+          throw new Error('Link library miss id: ' + libraryId);
         }
       }
 
@@ -13446,7 +13456,6 @@
       throw new Error('Dom must have a tagName');
     }
 
-    linkInit(json);
     var style = props.style;
     abbr2full(style, abbrCssProperty$1); // 先替换style的
 
