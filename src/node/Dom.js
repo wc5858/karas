@@ -199,7 +199,7 @@ class Dom extends Xom {
     }
     // 递归children取最大值
     flowChildren.forEach(item => {
-      if(item instanceof Xom || item instanceof Component || item.shadowRoot instanceof Xom) {
+      if(item instanceof Xom || item instanceof Component && item.shadowRoot instanceof Xom) {
         let { b: b2, min: min2, max: max2 } = item.__calAutoBasis(isDirectionRow, w, h, true);
         b = Math.max(b, b2);
         min = Math.max(min, min2);

@@ -186,7 +186,6 @@ class Component extends Event {
   }
 
   render() {
-    throw new Error('Component must implement render()');
   }
 
   __destroy() {
@@ -319,6 +318,7 @@ Object.keys(repaint.GEOM).concat([
 
 [
   '__layout',
+  '__layoutAbs',
   '__tryLayInline',
   '__offsetX',
   '__offsetY',
